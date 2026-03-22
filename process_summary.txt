@@ -1,0 +1,89 @@
+Process Overview
+
+1. Initial inspection
+- Read the project directory to confirm the notebook, CSV, and reference paper were present.
+- Inspected the notebook cell map first instead of editing blindly.
+- Identified that the notebook already contained substantial setup: exploratory analysis, baseline OLS work, post-double-selection code, and a generic PLR DML scaffold.
+- Confirmed the data shape was 9,915 observations and matched the assignment description.
+
+2. Problems found before adding answers
+- The data-loading cell called `read_csv_comma('401k.csv')` even though the helper expected both a path and filename. That would fail when run.
+- The notebook contained an inline `!pip install torchview` cell, which is not appropriate for an offline reproducible deliverable.
+- Some helper cells included example blocks guarded by `if __name__ == "__main__":`. In a notebook execution context, those blocks would still run and add unnecessary runtime.
+- The notebook stopped at the exam prompt and did not yet contain the actual Question 1-3 answers.
+
+3. Reuse strategy
+- Reused the existing `post_double_selection` helper for the sparse benchmark instead of rewriting that method.
+- Reused the existing `dml_plr_partialing_out` helper for the PLR benchmark comparison in Question 1.
+- Added only the missing estimators required by the assignment:
+  - fully nonparametric AIPW DML for the eligibility ATE,
+  - PLIV DML for the participation LATE,
+  - fully nonparametric LATE DML for the binary-instrument / binary-treatment case.
+- Kept the new helper design consistent with the existing notebook style: pandas inputs, fold-based cross-fitting, and score-based inference.
+
+Thinking Overview
+
+1. Model choice logic
+- The assignment allowed sklearn-based nuisance learners and emphasized offline stability.
+- I tested both lasso-based and random-forest-based nuisance configurations outside the notebook before finalizing the inserted notebook code.
+- The lasso path was workable but much slower because of repeated inner cross-validation in multiple nuisance stages.
+- A modest random-forest default produced estimates in the expected empirical range while remaining stable and simple enough for notebook execution.
+- I therefore used random forests for the new fully nonparametric estimators and kept the notebook's existing sparse methods for the benchmark comparisons.
+
+2. Why these estimators were added
+- Question 1 required a cross-fitted AIPW estimator with nuisance functions for treated outcome regression, untreated outcome regression, and treatment propensity. That estimator directly targets the fully nonparametric ATE.
+- Question 2 required the partially linear IV orthogonal score. That is different from the PLR estimator already in the notebook, so it needed a new implementation.
+- Question 3 required the nonparametric Wald-type orthogonal score using outcome bridge terms and treatment bridge terms by instrument status. That also required a separate implementation.
+
+3. Validation approach
+- Before patching the notebook, I ran standalone checks on the 401(k) data to make sure the estimates were sensible.
+- I compared them against the assignment sanity-check ranges:
+  - naive eligibility effect around $19.6k,
+  - flexible ATE estimates around $7k-$9k,
+  - IV/LATE participation effects around $9k-$12k.
+- The candidate implementations produced results in those ranges, so I used them in the notebook.
+
+Execution and Debugging Steps
+
+1. Notebook patching
+- Fixed the data-loading cell to read `401k.csv` correctly from the working directory.
+- Replaced the `pip install` cell with an optional import pattern that skips the visualization if `torchview` is unavailable.
+- Removed the auto-executing example blocks from the helper cells so the notebook would not spend time on unrelated demonstrations.
+- Inserted new markdown and code cells immediately after the exam section.
+
+2. New answer section contents
+- Added a shared setup cell for controls, nuisance learners, formatting helpers, and all three new estimators.
+- Added Question 1 markdown explaining the identifying assumptions, AIPW score, cross-fitting, and interpretation.
+- Added Question 2 markdown covering PLIV, the estimator formula, and the IV assumptions:
+  - relevance,
+  - conditional exogeneity,
+  - exclusion restriction,
+  - monotonicity,
+  - why participation is endogenous.
+- Added Question 3 markdown comparing the fully nonparametric LATE estimator to PLIV and explaining the difference in structural assumptions.
+- Added comparison tables and short empirical conclusions.
+
+3. Verification issues and fixes
+- `nbconvert` failed in this environment because of an installed third-party extension importing `notebook.services`.
+- I switched to `nbclient` directly for notebook execution.
+- That then hit a sandbox restriction because launching a Jupyter kernel needed local port/kernel permissions.
+- After approval, I executed the finished notebook successfully and saved the outputs in place.
+- I also performed a direct plain-Python sequential execution pass to verify the logic independently.
+- During output review, I noticed the final comparison table omitted the PLIV row. I patched that and reran the notebook so the saved outputs matched the assignment requirements.
+
+Final Results Embedded in the Notebook
+
+- Naive difference in means for eligibility: about $19,559.
+- OLS with base controls: about $5,896.
+- Polynomial OLS: about $8,805.
+- Post-double-selection: about $9,364.
+- PLR DML benchmark: about $8,819.
+- Fully nonparametric AIPW DML ATE: about $7,691.
+- PLIV DML LATE: about $12,506.
+- Fully nonparametric LATE DML: about $10,930.
+
+Deliverable Outcome
+
+- The completed notebook was saved as `gifford_midterm_doublemachinelearning.ipynb`.
+- The notebook now runs with the inserted answers, embedded outputs, and final comparison table.
+- The new code keeps all fold-specific learning inside training folds and avoids unnecessary installation steps.

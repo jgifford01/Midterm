@@ -1,0 +1,105 @@
+Midterm Instruction Check Results
+
+Files checked
+- /Users/jacobgifford/Desktop/Metrics III/Midterm/gifford_midterm_doublemachinelearning.ipynb
+- /Users/jacobgifford/Desktop/Metrics III/Midterm/doublemachinelearning.ipynb
+- /Users/jacobgifford/Desktop/Metrics III/Midterm/401k.csv
+
+Overall verdict
+- Status: Mostly followed.
+- Summary: The finished notebook satisfies the substantive midterm requirements: the three question sections were added, the required DML estimators were implemented, the key comparisons and interpretations are present, and the saved notebook has embedded outputs. There is one clear partial-compliance item: the original notebook file was not updated in place; the completed work exists in the new deliverable notebook only.
+
+Detailed checklist
+
+1. Deliverable and file handling
+- PASS: A completed notebook was created at `gifford_midterm_doublemachinelearning.ipynb`.
+- PASS: The deliverable is a notebook, not a separate script.
+- PARTIAL: The instruction said to complete `doublemachinelearning.ipynb` "in place" and save as `gifford_midterm_doublemachinelearning.ipynb`. The completed content is in the new notebook, but the original `doublemachinelearning.ipynb` was not updated.
+
+2. Existing notebook inspection and reuse
+- PASS: Existing helper logic was reused rather than duplicated.
+- PASS: The post-double-selection helper from the original notebook was reused.
+- PASS: The existing PLR DML helper was reused for the benchmark comparison in Question 1.
+
+3. Offline notebook hygiene
+- PASS: The broken data-loading cell was fixed in the finished notebook.
+- PASS: The unnecessary `pip install` step was removed from the finished notebook.
+- PASS: Optional `torchview` logic now degrades gracefully if the package is unavailable.
+- PASS: Auto-running example blocks that added unnecessary runtime were disabled in the finished notebook.
+
+4. Midterm Question 1 requirements
+- PASS: Added a dedicated Question 1 markdown section after the exam prompt.
+- PASS: Implemented fully nonparametric DML for the ATE of eligibility on `net_tfa`.
+- PASS: Used `D = e401`, `Y = net_tfa`, and the required control set.
+- PASS: Used cross-fitted AIPW / orthogonal-score DML for a binary treatment.
+- PASS: Estimated `mu1(x)`, `mu0(x)`, and `e(x)`.
+- PASS: Used cross-fitting and propensity clipping.
+- PASS: Reported point estimate, standard error, z-stat, p-value, and 95% CI.
+- PASS: Compared the fully nonparametric ATE to the PLR DML and post-double-selection estimates.
+- PASS: Added a short interpretation for why the flexible estimates are much smaller than the naive difference in means.
+- PASS: Result is in the expected range. Saved output shows:
+  - naive difference in means: about `$19,559`
+  - PLR DML: about `$8,819`
+  - fully nonparametric AIPW DML: about `$7,691`
+
+5. Midterm Question 2 requirements
+- PASS: Added a dedicated Question 2 markdown section after the exam prompt.
+- PASS: Specified a partially linear IV model for the LATE of participation on `net_tfa`.
+- PASS: Used `D = p401`, `Z = e401`, `Y = net_tfa`, and the required controls.
+- PASS: Implemented the Robinson-style PLIV orthogonal score.
+- PASS: Implemented cross-fitting for `l(X)`, `r(X)`, and `m(X)`.
+- PASS: Used the required PLIV DML estimator formula.
+- PASS: Reported robust score-based SE, z-stat, p-value, and 95% CI.
+- PASS: Included markdown discussion of:
+  - instrument relevance,
+  - conditional exogeneity,
+  - exclusion restriction,
+  - monotonicity/compliers,
+  - why participation is endogenous.
+- PASS: Reported first-stage evidence in the notebook output.
+- PASS: Result is positive and larger than the eligibility ATE. Saved PLIV estimate is about `$12,506`.
+- NOTE: This is slightly above the rough sanity-check band of `$9k-$12k`, but still close and economically consistent with the assignment's intended pattern.
+
+6. Midterm Question 3 requirements
+- PASS: Added a dedicated Question 3 markdown section after the exam prompt.
+- PASS: Implemented the fully nonparametric binary-instrument / binary-treatment LATE score.
+- PASS: Estimated cross-fitted nuisance functions `mu(z, x)`, `m(z, x)`, and `p(x)`.
+- PASS: Used cross-fitting and propensity clipping.
+- PASS: Derived score-based inference and reported SE, z-stat, p-value, and 95% CI.
+- PASS: Compared the fully nonparametric LATE to the PLIV DML estimate from Question 2.
+- PASS: Discussed how the assumptions differ:
+  - PLIV imposes a partially linear additive structure,
+  - the fully nonparametric LATE allows richer heterogeneity,
+  - both rely on IV assumptions for LATE interpretation.
+- PASS: Result is in the expected range. Saved fully nonparametric LATE estimate is about `$10,930`.
+
+7. Implementation constraints
+- PASS: The finished notebook uses only packages already expected in the environment: `numpy`, `pandas`, `statsmodels`, `sklearn`, `matplotlib`, `seaborn`, plus the notebook's preexisting `torch` content.
+- PASS: The new DML estimators do not rely on internet access or package installation.
+- PASS: For the cross-fitted estimators added in the answer section, no data-learning preprocessing is performed outside the training folds.
+- PASS: Added clear helper functions for nuisance learner construction and for the three required DML estimators.
+- PARTIAL: Cross-fitting is implemented clearly inside each estimator rather than via one shared reusable cross-fitting helper function. Functionally this satisfies the estimator requirement, but it is not a standalone generic cross-fitting helper.
+
+8. Presentation requirements
+- PASS: Added concise markdown before each answer explaining the model, target parameter, assumptions, and estimator.
+- PASS: Added result tables for each question.
+- PASS: Added a final comparison table including:
+  - naive difference in means,
+  - OLS with controls,
+  - polynomial OLS,
+  - post-double-selection,
+  - PLR DML,
+  - fully nonparametric ATE DML,
+  - PLIV DML LATE,
+  - fully nonparametric LATE DML.
+- PASS: Added a short final economic conclusion.
+
+9. Reproducibility and execution
+- PASS: The finished notebook was executed successfully and has saved outputs embedded.
+- PASS: Key result cells in the finished notebook contain outputs.
+- PASS: The saved outputs align with the assignment sanity checks.
+
+Bottom line
+- Substantive compliance is strong: the notebook answers the midterm as requested and the empirical outputs are sensible.
+- Main deviation: the original notebook file was not updated in place.
+- Minor style deviation: cross-fitting was not factored into a single generic helper function, though it is implemented correctly within each estimator.

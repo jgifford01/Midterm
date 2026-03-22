@@ -1,0 +1,116 @@
+Read and complete the notebook /Users/jacobgifford/Desktop/Metrics III/Midterm/doublemachinelearning.ipynb in place.
+
+Project files:
+- Notebook: /Users/jacobgifford/Desktop/Metrics III/Midterm/doublemachinelearning.ipynb
+- Data: /Users/jacobgifford/Desktop/Metrics III/Midterm/401k.csv
+- Reference paper: /Users/jacobgifford/Desktop/Metrics III/Midterm/ectj00c1.pdf
+
+Context:
+- This is a midterm on Double Machine Learning using the 401(k) dataset.
+- Outcome variable: net_tfa
+- Eligibility variable: e401
+- Participation variable: p401
+- Base controls: age, inc, educ, fsize, marr, twoearn, db, pira, hown
+- The dataset has 9,915 observations and no missing values.
+- The notebook already contains exploratory analysis, OLS/polynomial/naive-lasso examples, post-double-selection code, and a generic PLR DML implementation scaffold.
+- There are also placeholder theory/prompt cells. Do not treat those as the final answers.
+
+Main objective:
+Finish the notebook so it fully answers the 3 midterm questions with runnable code, clear markdown explanation, tables/results, and brief interpretation.
+
+Required tasks:
+1. Carefully inspect the existing notebook and reuse/refactor existing helper functions where sensible instead of duplicating large blocks.
+2. Fix obvious notebook issues if needed so the notebook runs cleanly offline. In particular, check the data-loading cell and avoid unnecessary `pip install` steps.
+3. Add complete markdown + code cells after the “Mid-Term Exam Questions” section to answer each question.
+
+Question 1:
+Implement fully nonparametric DML for the ATE of 401(k) eligibility on net financial assets.
+- Treatment is D = e401.
+- Outcome is Y = net_tfa.
+- Controls are X = [age, inc, educ, fsize, marr, twoearn, db, pira, hown].
+- Use cross-fitted AIPW / orthogonal-score DML for a binary treatment.
+- Estimate nuisance functions:
+  - mu1(x) = E[Y | D=1, X=x]
+  - mu0(x) = E[Y | D=0, X=x]
+  - e(x) = P(D=1 | X=x)
+- Use cross-fitting and propensity clipping.
+- Return point estimate, standard error, z-stat, p-value, and 95% CI.
+- Compare this fully nonparametric ATE to:
+  - the PLR DML estimate already implemented in the notebook
+  - the post-double-selection estimate already implemented in the notebook
+- Add a short interpretation of why the flexible estimates are much smaller than the naive difference in means.
+
+Question 2:
+Specify and estimate a Partially Linear IV model for the LATE of 401(k) participation on net financial assets.
+- Endogenous treatment is D = p401.
+- Instrument is Z = e401.
+- Outcome is Y = net_tfa.
+- Controls are the same X as above.
+- Use the Robinson-style PLIV orthogonal score from Chernozhukov et al.:
+  psi(W; theta, eta) = (Y - l(X) - theta * (D - r(X))) * (Z - m(X))
+  where:
+  - l(X) = E[Y | X]
+  - r(X) = E[D | X]
+  - m(X) = E[Z | X]
+- Implement cross-fitting for these nuisance functions.
+- Compute the PLIV DML estimate:
+  theta_hat = mean((Z - m_hat(X)) * (Y - l_hat(X))) / mean((Z - m_hat(X)) * (D - r_hat(X)))
+- Report robust score-based SE, z-stat, p-value, and 95% CI.
+- Include a rigorous markdown discussion of IV identification:
+  - relevance of e401 for p401
+  - conditional exogeneity of e401 given X
+  - exclusion restriction
+  - monotonicity/compliers for LATE interpretation
+  - why participation is endogenous even if eligibility may be conditionally exogenous
+
+Question 3:
+Estimate the LATE of 401(k) participation using a fully nonparametric DML approach.
+- Use the binary-instrument/binary-treatment orthogonal score from the paper’s LATE section.
+- Estimate cross-fitted nuisance functions:
+  - mu(z, x) = E[Y | Z=z, X=x]
+  - m(z, x) = E[D | Z=z, X=x]
+  - p(x) = P(Z=1 | X=x)
+- Implement the orthogonal score:
+  phi_y = mu(1,X) - mu(0,X) + Z*(Y-mu(1,X))/p(X) - (1-Z)*(Y-mu(0,X))/(1-p(X))
+  phi_d = m(1,X) - m(0,X) + Z*(D-m(1,X))/p(X) - (1-Z)*(D-m(0,X))/(1-p(X))
+  theta_hat = mean(phi_y) / mean(phi_d)
+- Use cross-fitting and propensity clipping.
+- Derive score-based inference for theta_hat.
+- Compare this fully nonparametric LATE to the PLIV DML estimate from Question 2.
+- Discuss how the assumptions differ:
+  - PLIV imposes an additive partially linear structure
+  - fully nonparametric LATE allows richer heterogeneity but uses stronger nuisance estimation
+  - both still rely on IV assumptions for LATE
+
+Implementation constraints:
+- Use only packages that are likely already available in the environment: numpy, pandas, statsmodels, sklearn, matplotlib, seaborn.
+- Do not rely on external internet access or new package installs.
+- Keep all preprocessing that learns from the data inside training folds when using cross-fitting.
+- Use clear helper functions for:
+  - nuisance learner construction
+  - cross-fitting
+  - AIPW ATE
+  - PLIV DML
+  - fully nonparametric LATE DML
+- Prefer sklearn-based nuisance models such as lasso/logistic-lasso, random forest, or MLP, but choose at least one stable default that runs in a notebook environment.
+
+Presentation requirements:
+- Add concise markdown before each answer explaining the model, target parameter, identifying assumptions, and estimator.
+- Present a comparison table summarizing:
+  - naive difference in means
+  - OLS / polynomial baseline if relevant
+  - post-double-selection
+  - PLR DML
+  - fully nonparametric ATE DML
+  - PLIV DML LATE
+  - fully nonparametric LATE DML
+- End with a short conclusion explaining the economic interpretation.
+
+Sanity checks:
+- The naive no-controls effect of e401 on net_tfa should be about $19.6k.
+- Flexible DML ATE estimates for e401 should be much smaller, roughly in the $7k-$9k range.
+- IV/DML participation effects should be positive and typically larger than the eligibility ATE, roughly around $9k-$12k.
+- If results are far outside these ranges, debug the implementation before finalizing.
+
+Deliverable:
+Return the completed notebook content, not a separate script, with all new cells inserted and all results reproducible.
